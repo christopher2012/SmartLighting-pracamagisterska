@@ -1,0 +1,8 @@
+.pane {
+    -fx-background-color: #8fbc8f;
+    -fx-background-radius: 5.0;
+}
+
+.choice-box .menu-item > .label { 
+	-fx-pref-width: 149.0;
+}
