@@ -1,4 +1,4 @@
-package drivers.agents;
+package agents.lowlevel;
 
 import drivers.interfaces.StreetLampRemote;
 import jade.core.AID;

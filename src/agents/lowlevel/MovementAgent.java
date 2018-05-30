@@ -1,4 +1,4 @@
-package drivers.agents;
+package agents.lowlevel;
 
 import drivers.interfaces.MovementRemote;
 import jade.core.AID;

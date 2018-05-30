@@ -11,6 +11,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 import org.neo4j.driver.v1.types.Node;
 
+import javafx.application.Platform;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.geometry.Insets;
@@ -38,12 +39,24 @@ public class GuiGenerator {
 
 	private static GuiGenerator guiGenerator = null;
 	private Pane canvas;
+	private Label currentTimeLabel;
 
 	public static GuiGenerator instance() {
 		if (guiGenerator == null)
 			guiGenerator = new GuiGenerator();
 
 		return guiGenerator;
+	}
+
+	public void setCurrentTime(String currentTime) {
+
+		Platform.runLater(new Runnable() {
+
+			@Override
+			public void run() {
+				currentTimeLabel.setText(currentTime);
+			}
+		});
 	}
 
 	public void addRoads(DatabaseManager databaseManager) {
@@ -158,15 +171,10 @@ public class GuiGenerator {
 		label4.setMaxWidth(180);
 		label4.setAlignment(Pos.CENTER);
 		label4.setStyle("-fx-font: normal bold 15px 'serif' ");
-		Label label5 = new Label();
-		label5.setText("14.02.2018 10:11:12 (DZIEÑ)");
-		label5.setMaxWidth(180);
-		label5.setAlignment(Pos.CENTER);
-		Label label6 = new Label();
-		label6.setText("Szybkoœæ symulacji");
-		label6.setMaxWidth(180);
-		label6.setAlignment(Pos.CENTER);
-		label6.setStyle("-fx-font: normal bold 15px 'serif' ");
+		currentTimeLabel = new Label();
+		currentTimeLabel.setText("14.02.2018 10:11:12 (DZIEÑ)");
+		currentTimeLabel.setMaxWidth(180);
+		currentTimeLabel.setAlignment(Pos.CENTER);
 
 		CheckBox checkbox = new CheckBox("Samochód osobowy");
 		CheckBox checkbox2 = new CheckBox("Zorganizowana demostracja");
@@ -176,13 +184,8 @@ public class GuiGenerator {
 		locationchoiceBox.getItems().addAll("BRAK", "MA£E", "ŒREDNIE", "DU¯E");
 		locationchoiceBox.setMinWidth(180);
 		locationchoiceBox.getSelectionModel().selectFirst();
-		ChoiceBox speed = new ChoiceBox();
-		speed.getItems().addAll("3 sekundy", "15 sekund", "1 minuta", "30 minut", "1 godzina");
-		speed.setMinWidth(180);
-		speed.getSelectionModel().selectFirst();
 
 		Line separator = new Line(0, 0, 180, 0);
-		Line separator2 = new Line(0, 0, 180, 0);
 		Line separator3 = new Line(0, 0, 180, 0);
 		Line separator4 = new Line(0, 0, 180, 0);
 		Line separator5 = new Line(0, 0, 180, 0);
@@ -195,22 +198,19 @@ public class GuiGenerator {
 		VBox.setMargin(label1, new Insets(0, 0, 10, 0));
 		VBox.setMargin(label3, new Insets(0, 0, 10, 0));
 		VBox.setMargin(label4, new Insets(0, 0, 10, 0));
-		VBox.setMargin(label5, new Insets(0, 0, 10, 0));
-		VBox.setMargin(label6, new Insets(0, 0, 10, 0));
+		VBox.setMargin(currentTimeLabel, new Insets(0, 0, 10, 0));
 		VBox.setMargin(checkbox, new Insets(0, 0, 10, 0));
 		VBox.setMargin(checkbox2, new Insets(0, 0, 10, 0));
 		VBox.setMargin(checkbox3, new Insets(0, 0, 10, 0));
 		VBox.setMargin(locationchoiceBox, new Insets(0, 0, 10, 0));
-		VBox.setMargin(speed, new Insets(0, 0, 10, 0));
 		VBox.setMargin(separator, new Insets(5, 0, 15, 0));
-		VBox.setMargin(separator2, new Insets(5, 0, 15, 0));
 		VBox.setMargin(separator3, new Insets(5, 0, 15, 0));
 		VBox.setMargin(separator4, new Insets(5, 0, 15, 0));
 		VBox.setMargin(separator5, new Insets(5, 0, 15, 0));
 
-		vbox.getChildren().addAll(label2, label5, separator5, button1, button2, separator, label1, dateTimePicker,
-				button3, separator2, label6, speed, separator3, label3, checkbox, checkbox2, checkbox3, separator4,
-				label4, locationchoiceBox);
+		vbox.getChildren().addAll(label2, currentTimeLabel, separator5, button1, button2, separator, label1,
+				dateTimePicker, button3, separator3, label3, checkbox, checkbox2, checkbox3, separator4, label4,
+				locationchoiceBox);
 
 		canvas = new Pane();
 
