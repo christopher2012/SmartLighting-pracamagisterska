@@ -1,6 +1,6 @@
 package agents.lowlevel;
 
-import drivers.interfaces.MovementRemote;
+import drivers.remote.MovementRemote;
 import jade.core.AID;
 import jade.core.Agent;
 import jade.core.behaviours.Behaviour;
@@ -9,7 +9,7 @@ import jade.lang.acl.ACLMessage;
 
 public class MovementAgent extends Agent {
 	
-	public static String PREFIX_MOVEMENT_AGENT = "MOVEMENT_";
+	public static String PREFIX_AGENT = "MOVEMENT_";
 
 	MovementRemote movementDriver;
 	AID managerAID;

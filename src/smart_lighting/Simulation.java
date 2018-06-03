@@ -4,8 +4,8 @@ import java.util.ArrayList;
 
 import org.neo4j.driver.v1.types.Node;
 
-import analytic.Manager;
 import javafx.application.Application;
+import javafx.scene.control.Tooltip;
 import javafx.scene.shape.Circle;
 import javafx.stage.Stage;
 

@@ -10,7 +10,7 @@ import java.net.URL;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import drivers.interfaces.MovementRemote;
+import drivers.remote.MovementRemote;
 
 public class Movement implements MovementRemote {
 

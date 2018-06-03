@@ -6,22 +6,24 @@ import java.util.Map;
 import org.json.JSONObject;
 
 import agents.analytic.EnvironmentAnalyzerAgent;
-import drivers.interfaces.AstronomicalClockRemote;
+import drivers.remote.AstronomicalClockRemote;
 import jade.core.Agent;
 import jade.core.behaviours.TickerBehaviour;
 import jade.domain.FIPAException;
 import jade.domain.FIPAAgentManagement.DFAgentDescription;
 import jade.lang.acl.ACLMessage;
+import utils.JSONKey;
 
 public class AstronomicalClockAgent extends Agent {
 
 	private final static int PERIOD_BEHAVIOUR = 1000 * 60;
 
 	public final static String PREFIX_AGENT = "ASTRONOMICAL_CLOCK_";
-	public final static String SUNRISE = "sunrise";
-	public final static String SUNSET = "sunset";
-	public final static String TIME = "time";
 
+	public final static String TIME_FORMAT = "dd.MM.yyyy HH:mm:ss";
+
+	public final static String ID = "-1";
+		
 	private AstronomicalClockRemote astronomicalClockDriver;
 
 	@Override
@@ -49,16 +51,16 @@ public class AstronomicalClockAgent extends Agent {
 			if (result != null & result.length > 0) {
 
 				String data = astronomicalClockDriver.getData();
-				System.out.println(data);
 				Map<String, String> map = new HashMap<String, String>();
-				map.put(SUNRISE, data.split(";")[0]);
-				map.put(SUNSET, data.split(";")[1]);
-				map.put(TIME, data.split(";")[2]);
+				map.put(JSONKey.LAMP_ID, astronomicalClockDriver.getID());
+				map.put(JSONKey.SUNRISE, data.split(";")[0]);
+				map.put(JSONKey.SUNSET, data.split(";")[1]);
+				map.put(JSONKey.TIME, data.split(";")[2]);
 				JSONObject jsonObject = new JSONObject(map);
-				System.out.println(jsonObject.toString());
 
 				ACLMessage wiadomosc = new ACLMessage(ACLMessage.INFORM);
-				wiadomosc.addReceiver(result[0].getName());
+				for (int i = 0; i < result.length; i++) 
+					wiadomosc.addReceiver(result[i].getName());
 
 				try {
 					wiadomosc.setContentObject(jsonObject.toString());
@@ -66,10 +68,7 @@ public class AstronomicalClockAgent extends Agent {
 				} catch (Exception e) {
 					e.printStackTrace(System.out);
 				}
-
 			}
 		}
-
 	}
-
 }

@@ -1,6 +1,6 @@
 package agents.lowlevel;
 
-import drivers.interfaces.StreetLampRemote;
+import drivers.remote.StreetLampRemote;
 import jade.core.AID;
 import jade.core.Agent;
 import jade.core.behaviours.CyclicBehaviour;
@@ -9,31 +9,26 @@ import jade.lang.acl.UnreadableException;
 
 public class StreetLampAgent extends Agent {
 
-	public static String PREFIX_STREET_LAMP_AGENT = "STREET_LAMP_";
-	
+	public static String PREFIX_AGENT = "STREET_LAMP_";
+
 	StreetLampRemote streetLampDriver;
 	AID managerAID;
 
 	@Override
 	protected void setup() {
-		// TODO Auto-generated method stub
 		super.setup();
-		managerAID = (AID) getArguments()[0];
-		streetLampDriver = (StreetLampRemote) getArguments()[1];
+		streetLampDriver = (StreetLampRemote) getArguments()[0];
 		addBehaviour(new CyclicBehaviour(this) {
 			public void action() {
 				ACLMessage msg = receive();
 				if (msg != null)
 					try {
-						//System.out.println(" - " + myAgent.getLocalName() + " <- " + msg.getContentObject());
-						streetLampDriver.changeState((boolean) msg.getContentObject());
+						streetLampDriver.setPower((float) msg.getContentObject());
 					} catch (UnreadableException e) {
-						// TODO Auto-generated catch block
 						e.printStackTrace();
 					}
 				block();
 			}
 		});
 	}
-
 }

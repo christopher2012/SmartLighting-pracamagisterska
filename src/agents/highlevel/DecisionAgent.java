@@ -1,32 +1,53 @@
 package agents.highlevel;
 
-import java.util.Date;
+import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Vector;
 
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import agents.analytic.EnvironmentAnalyzerAgent;
+import agents.analytic.ImageAnalyzerAgent;
+import agents.analytic.MovementAnalyzerAgent;
 import agents.lowlevel.AstronomicalClockAgent;
-import analytic.Manager;
 import jade.core.Agent;
 import jade.core.behaviours.CyclicBehaviour;
+import jade.core.behaviours.TickerBehaviour;
 import jade.domain.DFService;
 import jade.domain.FIPAException;
 import jade.domain.FIPAAgentManagement.DFAgentDescription;
 import jade.domain.FIPAAgentManagement.ServiceDescription;
 import jade.lang.acl.ACLMessage;
 import jade.lang.acl.UnreadableException;
+import model.Decision;
+import model.MicroEvironment;
+import smart_lighting.GuiGenerator;
+import smart_lighting.Manager;
+import utils.JSONKey;
 
 public class DecisionAgent extends Agent {
 
-	public static String PREFIX_AGENT = "DECISION_ENGINE_";
+	public final static String PREFIX_AGENT = "DECISION_ENGINE_";
+	public Vector<Decision> decisionQueue;
+	public Map<String, MicroEvironment> microEnvironments;
+
+	private ArrayList<String> acceptedIDList = new ArrayList<>();
 
 	@Override
 	protected void setup() {
-		super.setup();
 		register();
+
+		acceptedIDList = (ArrayList<String>) getArguments()[0];
+		microEnvironments = new HashMap<>();
+		for (String key : acceptedIDList) {
+			microEnvironments.put(key, new MicroEvironment(key));
+		}
+		addBehaviour(new DecisionProcessor(this));
+		addBehaviour(new DecisionSender(this, 5000));
+		decisionQueue = new Vector<>();
 	}
 
 	public static DFAgentDescription[] getDFAgents(Agent agent) throws FIPAException {
@@ -50,11 +71,10 @@ public class DecisionAgent extends Agent {
 		dfd.addServices(sd);
 		Manager.registerService(this, dfd);
 	}
-	
 
-	class DecisionSender extends CyclicBehaviour {
+	class DecisionProcessor extends CyclicBehaviour {
 
-		public DecisionSender(Agent agent) {
+		public DecisionProcessor(Agent agent) {
 			super(agent);
 		}
 
@@ -64,30 +84,127 @@ public class DecisionAgent extends Agent {
 			if (msg != null)
 				try {
 					if (msg != null) {
-						System.out.println("message: " + msg.getContentObject().toString());
-						System.out.println("sender: " + msg.getSender().toString());
-						execute(msg.getContentObject().toString());
+						JSONObject jsonObject = new JSONObject(msg.getContentObject().toString());
+						if (acceptedIDList.contains(jsonObject.getString(JSONKey.LAMP_ID))) {
+							// System.out.println("dec: " +
+							// msg.getContentObject().toString());
+							if (msg.getSender().getLocalName().contains(EnvironmentAnalyzerAgent.PREFIX_AGENT))
+								processEnviromentData(new JSONObject(msg.getContentObject().toString()));
+							else if (msg.getSender().getLocalName().contains(ImageAnalyzerAgent.PREFIX_AGENT))
+								processImageData(new JSONObject(msg.getContentObject().toString()));
+							else if (msg.getSender().getLocalName().contains(MovementAnalyzerAgent.PREFIX_AGENT))
+								processMovementData(new JSONObject(msg.getContentObject().toString()));
+						} else if (jsonObject.getString(JSONKey.LAMP_ID).equals(AstronomicalClockAgent.ID)) {
+							if (jsonObject.has(JSONKey.TIME_OF_DAY))
+								if (jsonObject.getString(JSONKey.TIME_OF_DAY).equals(JSONKey.NIGHT))
+									MicroEvironment.setNight(true);
+								else
+									MicroEvironment.setNight(false);
+						}
+
 					}
-				} catch (UnreadableException e) {
+				} catch (UnreadableException | JSONException e) {
 					e.printStackTrace();
 				}
 			block();
 		}
 
-		@SuppressWarnings("deprecation")
-		private void execute(String msg) {
-			JSONObject jsonObject;
-			try {
-				jsonObject = new JSONObject(msg);
-				System.out.println("message---- decision: " + jsonObject.toString());
+		private void processEnviromentData(JSONObject msg) throws JSONException {
+			String id = msg.getString(JSONKey.LAMP_ID);
+			MicroEvironment microEvironment = microEnvironments.get(id);
 
-			} catch (JSONException e) {
-				e.printStackTrace();
+			// System.out.println("message: " + msg.toString());
+			if (msg.has(JSONKey.VALUE)) {
+				microEvironment.setIlluminance(Float.valueOf(msg.getString(JSONKey.VALUE)));
+				// if (microEvironment.calculatePower())
+				if (microEvironment.calculatePower())
+					sendDecision(new Decision(id, microEvironment.getPower()));
+				// decisionQueue.add(new Decision(id,
+				// microEvironment.getPower()));
+				// System.out.println("agent " + getAID().toString());
+				// System.out.println(
+				// "adding decision(" + decisionQueue.size() + "): " + id + " "
+				// + microEvironment.getPower());
+
+				GuiGenerator.instance().getStreetLightInfo(id).updateInfo(microEnvironments.get(id));
+				// System.out.println("ill: " +
+				// microEvironment.getIlluminance());
+				// System.out.println("power: " + microEvironment.getPower());
 			}
 		}
 
-		public void sendDecision(JSONObject jsonObject) {
-			
+		private void processImageData(JSONObject msg) {
+
+		}
+
+		private void processMovementData(JSONObject msg) {
+
+		}
+
+		private void sendDecision(Decision decision) {
+			DFAgentDescription[] result = null;
+			try {
+				result = ExecutionAgent.getDFAgents(DecisionAgent.this);
+			} catch (FIPAException e) {
+				e.printStackTrace();
+			}
+
+			if (result != null & result.length > 0) {
+				ACLMessage message = new ACLMessage(ACLMessage.INFORM);
+				for (int i = 0; i < result.length; i++) {
+					message.addReceiver(result[i].getName());
+				}
+
+				Map map = new HashMap();
+				map.put(JSONKey.LAMP_ID, decision.lampID);
+				map.put(JSONKey.POWER, decision.power);
+				try {
+					message.setContentObject(new JSONObject(map).toString());
+					myAgent.send(message);
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
+			}
+		}
+	}
+
+	class DecisionSender extends TickerBehaviour {
+
+		public DecisionSender(Agent agent, long period) {
+			super(agent, period);
+		}
+
+		@Override
+		protected void onTick() {
+
+			if (decisionQueue.size() > 0) {
+				DFAgentDescription[] result = null;
+				try {
+					result = ExecutionAgent.getDFAgents(DecisionAgent.this);
+				} catch (FIPAException e) {
+					e.printStackTrace();
+				}
+
+				if (result != null & result.length > 0) {
+					ACLMessage message = new ACLMessage(ACLMessage.INFORM);
+					for (int i = 0; i < result.length; i++) {
+						message.addReceiver(result[i].getName());
+					}
+					for (Decision decision : decisionQueue) {
+						Map map = new HashMap();
+						map.put(JSONKey.LAMP_ID, decision.lampID);
+						map.put(JSONKey.POWER, decision.power);
+						try {
+							message.setContentObject(new JSONObject(map).toString());
+							myAgent.send(message);
+						} catch (IOException e) {
+							e.printStackTrace();
+						}
+					}
+					decisionQueue.clear();
+				}
+			}
+
 		}
 	}
 }

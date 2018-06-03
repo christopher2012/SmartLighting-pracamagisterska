@@ -1,6 +1,6 @@
 package drivers;
 
-import drivers.interfaces.CameraRemote;
+import drivers.remote.CameraRemote;
 
 public class Camera implements CameraRemote{
 

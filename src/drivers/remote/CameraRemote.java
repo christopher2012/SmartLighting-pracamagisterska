@@ -1,4 +1,4 @@
-package drivers.interfaces;
+package drivers.remote;
 
 public interface CameraRemote {
 	String getData();

@@ -1,18 +1,21 @@
 package smart_lighting;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.net.HttpURLConnection;
-import java.net.URL;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
-
-import org.json.JSONException;
-import org.json.JSONObject;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
 import org.neo4j.driver.v1.types.Node;
 
+import agents.lowlevel.AstronomicalClockAgent;
 import javafx.application.Platform;
+import javafx.beans.value.ChangeListener;
+import javafx.beans.value.ObservableValue;
 import javafx.event.ActionEvent;
+import javafx.event.Event;
 import javafx.event.EventHandler;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
@@ -22,6 +25,7 @@ import javafx.scene.control.CheckBox;
 import javafx.scene.control.ChoiceBox;
 import javafx.scene.control.Label;
 import javafx.scene.control.ScrollPane;
+import javafx.scene.control.Tooltip;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.VBox;
@@ -34,18 +38,24 @@ import smart_lighting.DatabaseManager.Road;
 import smart_lighting.Simulation.ActorModel;
 import smart_lighting.Simulation.StreetLampModel;
 import tornadofx.control.DateTimePicker;
+import utils.StreetLightInfo;
 
 public class GuiGenerator {
 
 	private static GuiGenerator guiGenerator = null;
 	private Pane canvas;
 	private Label currentTimeLabel;
+	private Map<String, StreetLightInfo> tooltips = new HashMap<>();
 
 	public static GuiGenerator instance() {
 		if (guiGenerator == null)
 			guiGenerator = new GuiGenerator();
 
 		return guiGenerator;
+	}
+
+	public StreetLightInfo getStreetLightInfo(String id) {
+		return tooltips.get(id);
 	}
 
 	public void setCurrentTime(String currentTime) {
@@ -79,6 +89,7 @@ public class GuiGenerator {
 		ArrayList<StreetLampModel> streetLamps = new ArrayList();
 
 		for (Node node : databaseManager.getDataDevices()) {
+			String id = node.get("node_id").asString();
 			double x = node.get("x").asDouble();
 			double y = node.get("y").asDouble();
 
@@ -87,8 +98,10 @@ public class GuiGenerator {
 			if (y > maxY)
 				maxY = y;
 
-			Circle circle = new Circle(x, y, 30, Paint.valueOf("FFFF80"));
+			Circle circle = new Circle(x, y, 5, Paint.valueOf("FFFF80"));
+			Circle circleTop = new Circle(x, y, 15, Paint.valueOf("9FA1A5"));
 			circle.setOpacity(0.5);
+			circleTop.setOpacity(0.7);
 			/*
 			 * RadialGradient gradient1 = new RadialGradient(0, .1, 100, 100,
 			 * 20, false, CycleMethod.NO_CYCLE, new Stop(0, Color.RED), new
@@ -96,8 +109,12 @@ public class GuiGenerator {
 			 * 
 			 * circle.setFill(gradient1);
 			 */
+			Tooltip tooltip = new Tooltip();
+			Tooltip.install(circleTop, tooltip);
+			tooltips.put(id, new StreetLightInfo(id, tooltip));
 
 			canvas.getChildren().add(circle);
+			canvas.getChildren().add(circleTop);
 			canvas.setMinHeight(maxY + 100);
 			canvas.setMinWidth(maxX + 100);
 			streetLamps.add(new Simulation.StreetLampModel(circle, node));
@@ -124,17 +141,24 @@ public class GuiGenerator {
 	public void generateWindow(Stage primaryStage) {
 
 		BorderPane border = new BorderPane();
+		SimpleDateFormat dateFormat = new SimpleDateFormat(AstronomicalClockAgent.TIME_FORMAT);
+		currentTimeLabel = new Label();
+		currentTimeLabel.setText(dateFormat.format(new Date()));
+		currentTimeLabel.setMaxWidth(180);
+		currentTimeLabel.setAlignment(Pos.CENTER);
 		VBox vbox = new VBox();
 		DateTimePicker dateTimePicker = new DateTimePicker();
 		dateTimePicker.setMinWidth(180);
+		dateTimePicker.setFormat(AstronomicalClockAgent.TIME_FORMAT);
+		DateTimeFormatter formatter = DateTimeFormatter.ofPattern(AstronomicalClockAgent.TIME_FORMAT);
+		dateTimePicker.setValue(LocalDate.parse(currentTimeLabel.getText(), formatter));
 		Button button1 = new Button("Uruchom symulacje");
 		button1.setMinWidth(180);
 		button1.setOnAction(new EventHandler<ActionEvent>() {
 
 			@Override
 			public void handle(ActionEvent event) {
-				// thread.start();
-
+				ClockSimulation.getInstance().startTimer();
 			}
 		});
 		Button button2 = new Button("Zatrzymaj symulacje");
@@ -143,13 +167,18 @@ public class GuiGenerator {
 
 			@Override
 			public void handle(ActionEvent event) {
-				// thread.stop();
-				// TODO Auto-generated method stub
-
+				ClockSimulation.getInstance().stopTimer();
 			}
 		});
 		Button button3 = new Button("Zastosuj");
 		button3.setMinWidth(180);
+		button3.setOnAction(new EventHandler<ActionEvent>() {
+
+			@Override
+			public void handle(ActionEvent event) {
+				ClockSimulation.getInstance().updateTime(dateTimePicker.getDateTimeValue().format(formatter));
+			}
+		});
 		vbox.setPadding(new Insets(10, 10, 10, 10));
 		Label label1 = new Label();
 		label1.setText("Zmiana czasu symulacji:");
@@ -171,19 +200,22 @@ public class GuiGenerator {
 		label4.setMaxWidth(180);
 		label4.setAlignment(Pos.CENTER);
 		label4.setStyle("-fx-font: normal bold 15px 'serif' ");
-		currentTimeLabel = new Label();
-		currentTimeLabel.setText("14.02.2018 10:11:12 (DZIEÑ)");
-		currentTimeLabel.setMaxWidth(180);
-		currentTimeLabel.setAlignment(Pos.CENTER);
 
 		CheckBox checkbox = new CheckBox("Samochód osobowy");
 		CheckBox checkbox2 = new CheckBox("Zorganizowana demostracja");
 		CheckBox checkbox3 = new CheckBox("Pieszy przy ulicy");
 
 		ChoiceBox locationchoiceBox = new ChoiceBox();
-		locationchoiceBox.getItems().addAll("BRAK", "MA£E", "ŒREDNIE", "DU¯E");
+		locationchoiceBox.getItems().addAll(CloudinessSimulation.getInstance().getCloudinnessItem());
 		locationchoiceBox.setMinWidth(180);
 		locationchoiceBox.getSelectionModel().selectFirst();
+		locationchoiceBox.getSelectionModel().selectedIndexProperty().addListener(new ChangeListener<Number>() {
+
+			@Override
+			public void changed(ObservableValue<? extends Number> observable, Number oldValue, Number newValue) {
+				CloudinessSimulation.getInstance().setCurrentItem(newValue.intValue());
+			}
+		});
 
 		Line separator = new Line(0, 0, 180, 0);
 		Line separator3 = new Line(0, 0, 180, 0);

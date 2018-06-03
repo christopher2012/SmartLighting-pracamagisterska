@@ -1,6 +1,6 @@
 package drivers;
 
-import drivers.interfaces.StreetLampRemote;
+import drivers.remote.StreetLampRemote;
 import smart_lighting.Simulation;
 
 public class StreetLamp implements StreetLampRemote {
@@ -12,11 +12,9 @@ public class StreetLamp implements StreetLampRemote {
 	}
 
 	@Override
-	public void changeState(boolean isOn) {
-		if (isOn)
-			streetLampModel.circle.setFill(javafx.scene.paint.Color.RED);
-		else
-			streetLampModel.circle.setFill(javafx.scene.paint.Color.YELLOW);
+	public void setPower(float power) {
+		streetLampModel.circle.setRadius(50*power);
+		streetLampModel.circle.setOpacity(power*0.9);
 	}
 
 }
