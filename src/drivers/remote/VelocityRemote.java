@@ -1,5 +1,7 @@
 package drivers.remote;
 
-public interface VelocityRemote {
-	double getVelocity();
+import drivers.Velocity.OnResult;
+
+public interface VelocityRemote extends DriverRemote{
+	void getData(OnResult onResult);
 }

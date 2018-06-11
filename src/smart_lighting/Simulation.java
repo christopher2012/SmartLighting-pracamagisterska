@@ -5,7 +5,6 @@ import java.util.ArrayList;
 import org.neo4j.driver.v1.types.Node;
 
 import javafx.application.Application;
-import javafx.scene.control.Tooltip;
 import javafx.scene.shape.Circle;
 import javafx.stage.Stage;
 
@@ -30,8 +29,7 @@ public class Simulation extends Application {
 		GuiGenerator.instance().addRoads(databaseManager);
 		Manager.onDataLoadListener.onDataLoad(GuiGenerator.instance().addStreetLamps(databaseManager));
 		ArrayList<ActorModel> actors = new ArrayList<>();
-		actors.add(GuiGenerator.instance().addActor("KR01112"));
-		actors.add(GuiGenerator.instance().addActor("KR01113"));
+		actors.add(GuiGenerator.instance().addGroup("KR01234"));
 		Manager.onCreateActorsListener.onCreateActors(actors);
 	}
 

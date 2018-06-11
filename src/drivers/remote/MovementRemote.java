@@ -1,5 +1,7 @@
 package drivers.remote;
 
-public interface MovementRemote {
-	boolean isMove();
+import drivers.Movement.OnResult;
+
+public interface MovementRemote extends DriverRemote {
+	void getData(OnResult onResult);
 }

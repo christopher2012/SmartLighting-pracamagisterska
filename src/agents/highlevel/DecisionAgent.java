@@ -86,8 +86,6 @@ public class DecisionAgent extends Agent {
 					if (msg != null) {
 						JSONObject jsonObject = new JSONObject(msg.getContentObject().toString());
 						if (acceptedIDList.contains(jsonObject.getString(JSONKey.LAMP_ID))) {
-							// System.out.println("dec: " +
-							// msg.getContentObject().toString());
 							if (msg.getSender().getLocalName().contains(EnvironmentAnalyzerAgent.PREFIX_AGENT))
 								processEnviromentData(new JSONObject(msg.getContentObject().toString()));
 							else if (msg.getSender().getLocalName().contains(ImageAnalyzerAgent.PREFIX_AGENT))
@@ -113,31 +111,29 @@ public class DecisionAgent extends Agent {
 			String id = msg.getString(JSONKey.LAMP_ID);
 			MicroEvironment microEvironment = microEnvironments.get(id);
 
-			// System.out.println("message: " + msg.toString());
 			if (msg.has(JSONKey.VALUE)) {
 				microEvironment.setIlluminance(Float.valueOf(msg.getString(JSONKey.VALUE)));
-				// if (microEvironment.calculatePower())
+
 				if (microEvironment.calculatePower())
 					sendDecision(new Decision(id, microEvironment.getPower()));
-				// decisionQueue.add(new Decision(id,
-				// microEvironment.getPower()));
-				// System.out.println("agent " + getAID().toString());
-				// System.out.println(
-				// "adding decision(" + decisionQueue.size() + "): " + id + " "
-				// + microEvironment.getPower());
 
 				GuiGenerator.instance().getStreetLightInfo(id).updateInfo(microEnvironments.get(id));
-				// System.out.println("ill: " +
-				// microEvironment.getIlluminance());
-				// System.out.println("power: " + microEvironment.getPower());
+
 			}
 		}
 
 		private void processImageData(JSONObject msg) {
 
+			//System.out.println("msg: " + msg.toString());
+
 		}
 
 		private void processMovementData(JSONObject msg) {
+
+			//System.out.println("msg: " + msg.toString());
+			if(msg.has("sensingMovement")){
+				System.out.println("msg: " + msg.toString());
+			}
 
 		}
 

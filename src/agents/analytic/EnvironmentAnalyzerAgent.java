@@ -53,7 +53,7 @@ public class EnvironmentAnalyzerAgent extends Agent {
 					if (msg != null) {
 						JSONObject jsonObject = new JSONObject(msg.getContentObject().toString());
 						if (acceptedIDList.contains(jsonObject.getString(JSONKey.LAMP_ID))
-								|| jsonObject.getString(JSONKey.LAMP_ID).equals("-1")) {
+								|| jsonObject.getString(JSONKey.LAMP_ID).equals(AstronomicalClockAgent.ID)) {
 							if (msg.getSender().getLocalName().contains(AstronomicalClockAgent.PREFIX_AGENT))
 								analyzeAstronomicalClock(msg.getContentObject().toString());
 							else if (msg.getSender().getLocalName().contains(IlluminanceAgent.PREFIX_AGENT))
@@ -72,7 +72,7 @@ public class EnvironmentAnalyzerAgent extends Agent {
 
 		private void analyzeIlluminance(String msg) {
 			try {
-				System.out.println("message Ill: " + msg.toString());
+				//System.out.println("message Ill: " + msg.toString());
 				sendData(new JSONObject(msg));
 			} catch (JSONException e) {
 				e.printStackTrace();

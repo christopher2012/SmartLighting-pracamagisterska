@@ -12,11 +12,10 @@ import jade.core.behaviours.TickerBehaviour;
 import jade.domain.FIPAException;
 import jade.domain.FIPAAgentManagement.DFAgentDescription;
 import jade.lang.acl.ACLMessage;
+import utils.Configuration;
 import utils.JSONKey;
 
 public class AstronomicalClockAgent extends Agent {
-
-	private final static int PERIOD_BEHAVIOUR = 1000 * 60;
 
 	public final static String PREFIX_AGENT = "ASTRONOMICAL_CLOCK_";
 
@@ -31,7 +30,7 @@ public class AstronomicalClockAgent extends Agent {
 		super.setup();
 
 		astronomicalClockDriver = (AstronomicalClockRemote) getArguments()[0];
-		addBehaviour(new DataService(this, PERIOD_BEHAVIOUR));
+		addBehaviour(new DataService(this, Configuration.ASTRONOMICAL_CLOCK_AGENT_PERIOD));
 	}
 
 	public class DataService extends TickerBehaviour {

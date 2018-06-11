@@ -1,5 +1,7 @@
 package drivers.remote;
 
-public interface CameraRemote {
-	String getData();
+import drivers.Camera;
+
+public interface CameraRemote extends DriverRemote {
+	void getData(Camera.OnResult onResult);
 }

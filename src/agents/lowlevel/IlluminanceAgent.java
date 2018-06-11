@@ -15,19 +15,20 @@ import jade.core.behaviours.TickerBehaviour;
 import jade.domain.FIPAException;
 import jade.domain.FIPAAgentManagement.DFAgentDescription;
 import jade.lang.acl.ACLMessage;
+import utils.Configuration;
 
 public class IlluminanceAgent extends Agent {
 
 	public final static String PREFIX_AGENT = "ILLUMINANCE_";
 
-	IlluminanceRemote illuminanceRemote;
+	IlluminanceRemote illuminanceDriver;
 	String actualValue = "";
 
 	@Override
 	protected void setup() {
 		super.setup();
-		illuminanceRemote = (IlluminanceRemote) getArguments()[0];
-		addBehaviour(new SendResult(this, 2000));
+		illuminanceDriver = (IlluminanceRemote) getArguments()[0];
+		addBehaviour(new SendResult(this, Configuration.ILLUMINANCE_AGENT_PERIOD));
 	}
 
 	class SendResult extends TickerBehaviour {
@@ -46,11 +47,10 @@ public class IlluminanceAgent extends Agent {
 			}
 			if (result != null & result.length > 0) {
 
-				double illuminance = illuminanceRemote.getIlluminance();
-				// if (!actualValue.equals(String.valueOf(illuminance))) {
+				double illuminance = illuminanceDriver.getIlluminance();
 
 				Map<String, String> map = new HashMap<String, String>();
-				map.put("lamp_id", illuminanceRemote.getID());
+				map.put("lamp_id", illuminanceDriver.getID());
 				map.put("value", String.valueOf(illuminance));
 				JSONObject jsonObject = new JSONObject(map);
 
@@ -66,7 +66,6 @@ public class IlluminanceAgent extends Agent {
 					e.printStackTrace(System.out);
 				}
 				actualValue = String.valueOf(illuminance);
-				// }
 			}
 		}
 	}

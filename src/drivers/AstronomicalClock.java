@@ -16,7 +16,6 @@ public class AstronomicalClock extends Driver implements AstronomicalClockRemote
 
 	public AstronomicalClock(String id) {
 		super(id);
-		// TODO Auto-generated constructor stub
 	}
 
 	final double longitude = 50.061914;

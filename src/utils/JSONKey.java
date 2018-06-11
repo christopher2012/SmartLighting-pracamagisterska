@@ -11,4 +11,11 @@ public class JSONKey {
 	public final static String SUNSET = "sunset";
 	public final static String VALUE = "value";
 	public final static String POWER = "power";
+	public final static String DATA = "data";
+
+	public final static String DIRECTION = "direction";
+	public final static String VELOCITY = "velocity";
+	public final static String OBJECT_ID = "id";
+	public final static String TYPE = "type";
+	
 }

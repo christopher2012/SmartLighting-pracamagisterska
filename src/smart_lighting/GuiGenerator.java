@@ -123,7 +123,41 @@ public class GuiGenerator {
 		return streetLamps;
 	}
 
-	public ActorModel addActor(String id) {
+	public ActorModel addPedestrian(String id) {
+		Circle circle = new Circle(0, 0, 8, Paint.valueOf("FFFFFF"));
+		canvas.getChildren().add(circle);
+
+		return new ActorModel(id, circle);
+	}
+	
+	public ActorModel addGroup(String id) {
+
+		Pane pane = new Pane();
+		
+		Circle circle1 = new Circle(-12, -12, 6, Paint.valueOf("FFFFFF"));
+		canvas.getChildren().add(circle1);
+		Circle circle2 = new Circle(-12.0, 12, 6, Paint.valueOf("FFFFFF"));
+		canvas.getChildren().add(circle2);
+		Circle circle3 = new Circle(0, 0, 6, Paint.valueOf("FFFFFF"));
+		canvas.getChildren().add(circle3);
+		Circle circle4 = new Circle(12, 12, 6, Paint.valueOf("FFFFFF"));
+		canvas.getChildren().add(circle4);
+		Circle circle5 = new Circle(12, -12, 6, Paint.valueOf("FFFFFF"));
+		canvas.getChildren().add(circle5);
+
+		pane.getChildren().add(circle1);
+		pane.getChildren().add(circle2);
+		pane.getChildren().add(circle3);
+		pane.getChildren().add(circle4);
+		pane.getChildren().add(circle5);
+		
+		canvas.getChildren().add(pane);
+
+		return new ActorModel(id, pane);
+	}
+	
+	public ActorModel addVehicle(String id) {
+				
 		Rectangle car = new Rectangle();
 
 		car.setX(-10);
