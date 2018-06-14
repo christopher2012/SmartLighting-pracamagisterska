@@ -41,14 +41,27 @@ import utils.Configuration;
 
 public class Manager extends Agent implements OnDataLoadListener, OnCreateActorsListener {
 
-	public static OnDataLoadListener onDataLoadListener ;
+	public static OnDataLoadListener onDataLoadListener;
 	public static OnCreateActorsListener onCreateActorsListener;
 
 	@Override
 	protected void setup() {
 		onDataLoadListener = Manager.this;
 		onCreateActorsListener = Manager.this;
-
+/*
+		try {
+			Class.forName("com.mysql.jdbc.Driver").newInstance();
+		} catch (InstantiationException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (IllegalAccessException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (ClassNotFoundException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		*/
 		Thread t = new Thread() {
 			@Override
 			public void run() {
@@ -116,7 +129,8 @@ public class Manager extends Agent implements OnDataLoadListener, OnCreateActors
 				"agents.analytic.ImageAnalyzerAgent", streetLamps);
 
 		createAgentsWithIDCheck(Configuration.MOVEMENT_ANALYZER_AGENT_COUNT, MovementAnalyzerAgent.PREFIX_AGENT,
-				"agents.analytic.ImageAnalyzerAgent", streetLamps);
+				"agents.analytic.MovementAnalyzerAgent", streetLamps);
+
 	}
 
 	@SuppressWarnings("unchecked")
@@ -149,7 +163,6 @@ public class Manager extends Agent implements OnDataLoadListener, OnCreateActors
 		}
 	}
 
-
 	public static void registerService(Agent agent, DFAgentDescription dfd) {
 		try {
 			DFService.register(agent, dfd);
@@ -161,7 +174,7 @@ public class Manager extends Agent implements OnDataLoadListener, OnCreateActors
 	@Override
 	public void onCreateActors(ArrayList<ActorModel> actors) {
 
-		 ActorsSimulation actorsSimulation = new ActorsSimulation(actors); //
-		 actorsSimulation.start();
+		ActorsSimulation actorsSimulation = new ActorsSimulation(actors); //
+		actorsSimulation.start();
 	}
 }

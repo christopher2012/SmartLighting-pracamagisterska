@@ -27,10 +27,12 @@ public class Simulation extends Application {
 	private void loadData() {
 		DatabaseManager databaseManager = new DatabaseManager("bolt://localhost:7687", "neo4j", "test");
 		GuiGenerator.instance().addRoads(databaseManager);
-		Manager.onDataLoadListener.onDataLoad(GuiGenerator.instance().addStreetLamps(databaseManager));
 		ArrayList<ActorModel> actors = new ArrayList<>();
-		actors.add(GuiGenerator.instance().addGroup("KR01234"));
+		actors.add(GuiGenerator.instance().addVehicle("KR01234"));
+		actors.add(GuiGenerator.instance().addPedestrian("1"));
+		// actors.add(GuiGenerator.instance().addGroup("1"));
 		Manager.onCreateActorsListener.onCreateActors(actors);
+		Manager.onDataLoadListener.onDataLoad(GuiGenerator.instance().addStreetLamps(databaseManager));
 	}
 
 	public static class StreetLampModel {

@@ -6,6 +6,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Vector;
 
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -85,6 +86,7 @@ public class DecisionAgent extends Agent {
 				try {
 					if (msg != null) {
 						JSONObject jsonObject = new JSONObject(msg.getContentObject().toString());
+						System.out.println(jsonObject.toString());
 						if (acceptedIDList.contains(jsonObject.getString(JSONKey.LAMP_ID))) {
 							if (msg.getSender().getLocalName().contains(EnvironmentAnalyzerAgent.PREFIX_AGENT))
 								processEnviromentData(new JSONObject(msg.getContentObject().toString()));
@@ -108,13 +110,14 @@ public class DecisionAgent extends Agent {
 		}
 
 		private void processEnviromentData(JSONObject msg) throws JSONException {
+
 			String id = msg.getString(JSONKey.LAMP_ID);
 			MicroEvironment microEvironment = microEnvironments.get(id);
 
 			if (msg.has(JSONKey.VALUE)) {
 				microEvironment.setIlluminance(Float.valueOf(msg.getString(JSONKey.VALUE)));
 
-				if (microEvironment.calculatePower())
+				if (microEvironment.calculatePower(microEnvironments))
 					sendDecision(new Decision(id, microEvironment.getPower()));
 
 				GuiGenerator.instance().getStreetLightInfo(id).updateInfo(microEnvironments.get(id));
@@ -122,17 +125,41 @@ public class DecisionAgent extends Agent {
 			}
 		}
 
-		private void processImageData(JSONObject msg) {
+		private void processImageData(JSONObject msg) throws JSONException {
 
-			//System.out.println("msg: " + msg.toString());
+			String id = msg.getString(JSONKey.LAMP_ID);
+			MicroEvironment microEvironment = microEnvironments.get(id);
 
+			if (msg.has("readings")) {
+				microEvironment.clearActors();
+				JSONArray jsonarray = msg.getJSONArray("readings");
+				if (jsonarray.length() > 0) {
+					for (int i = 0; i < jsonarray.length(); i++) {
+						JSONObject jsonObject = jsonarray.getJSONObject(i);
+						if (jsonObject.getString("type").equals("VEHICLE")) {
+							microEvironment.setVehicle(true);
+						} else if (jsonObject.getString("type").equals("PEDESTRIAN")) {
+							microEvironment.setPedestrian(true);
+						} else if (jsonObject.getString("type").equals("GROUP")) {
+							microEvironment.setGroup(true);
+						}
+					}
+				}
+			}
 		}
 
-		private void processMovementData(JSONObject msg) {
+		private void processMovementData(JSONObject msg) throws JSONException {
 
-			//System.out.println("msg: " + msg.toString());
-			if(msg.has("sensingMovement")){
-				System.out.println("msg: " + msg.toString());
+			String lampID = msg.getString("lamp_id");
+			System.out.println(msg.toString());
+			MicroEvironment microEvironment = microEnvironments.get(lampID);
+			if (msg.has("sensingMovement")) {
+				microEvironment.setMove(msg.getBoolean("sensingMovement"));
+				microEvironment.calculatePower(microEnvironments);
+
+				if (microEvironment.calculatePower(microEnvironments))
+					sendDecision(new Decision(lampID, microEvironment.getPower()));
+				GuiGenerator.instance().getStreetLightInfo(lampID).updateInfo(microEnvironments.get(lampID));
 			}
 
 		}

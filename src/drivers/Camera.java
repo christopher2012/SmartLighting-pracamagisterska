@@ -8,7 +8,7 @@ import org.json.JSONObject;
 
 import drivers.remote.CameraRemote;
 import utils.JSONKey;
-import utils.SimConnector;
+import utils.ApiConnector;
 
 public class Camera extends Driver implements CameraRemote {
 
@@ -24,7 +24,7 @@ public class Camera extends Driver implements CameraRemote {
 		MultiThreadedHttpConnectionManager connectionManager = new MultiThreadedHttpConnectionManager();
 		HttpClient httpClient = new HttpClient(connectionManager);
 
-		new SimConnector(httpClient, new GetMethod(DATA_URL + getID()), new SimConnector.OnResponseListener() {
+		new ApiConnector(httpClient, new GetMethod(DATA_URL + getID()), new ApiConnector.OnResponseListener() {
 
 			@Override
 			public void onResponse(JSONObject jsonObject) {

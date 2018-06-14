@@ -19,6 +19,8 @@ public class MovementAgent extends Agent {
 	public static String PREFIX_AGENT = "MOVEMENT_";
 
 	MovementRemote movementDriver;
+	String dataString = "";
+	int counter = 0;
 
 	@Override
 	protected void setup() {
@@ -39,25 +41,30 @@ public class MovementAgent extends Agent {
 
 				@Override
 				public void onResult(String data) {
-					DFAgentDescription[] result = null;
-					try {
-						result = MovementAnalyzerAgent.getDFAgents(MovementAgent.this);
-					} catch (FIPAException e) {
-						e.printStackTrace();
-					}
-					if (result != null & result.length > 0) {
-						ACLMessage wiadomosc = new ACLMessage(ACLMessage.INFORM);
-						for (int i = 0; i < result.length; i++) {
-							wiadomosc.addReceiver(result[i].getName());
-						}
-
+					if (!dataString.equals(data) && counter < 3){
+						DFAgentDescription[] result = null;
 						try {
-							wiadomosc.setContentObject(data);
-							myAgent.send(wiadomosc);
-						} catch (Exception e) {
-							e.printStackTrace(System.out);
+							result = MovementAnalyzerAgent.getDFAgents(MovementAgent.this);
+						} catch (FIPAException e) {
+							e.printStackTrace();
 						}
+						if (result != null & result.length > 0) {
+							ACLMessage wiadomosc = new ACLMessage(ACLMessage.INFORM);
+							for (int i = 0; i < result.length; i++) {
+								wiadomosc.addReceiver(result[i].getName());
+							}
+
+							try {
+								wiadomosc.setContentObject(data);
+								System.out.println(data);
+								myAgent.send(wiadomosc);
+							} catch (Exception e) {
+								e.printStackTrace(System.out);
+							}
+						}
+						counter = 0;
 					}
+					counter = counter > 100 ? counter + 1 : 4;
 				}
 			});
 		}

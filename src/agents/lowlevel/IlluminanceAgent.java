@@ -22,7 +22,8 @@ public class IlluminanceAgent extends Agent {
 	public final static String PREFIX_AGENT = "ILLUMINANCE_";
 
 	IlluminanceRemote illuminanceDriver;
-	String actualValue = "";
+	double illuminanceDouble = 0.0d;
+	int counter = 0;
 
 	@Override
 	protected void setup() {
@@ -46,26 +47,29 @@ public class IlluminanceAgent extends Agent {
 				e.printStackTrace();
 			}
 			if (result != null & result.length > 0) {
-
 				double illuminance = illuminanceDriver.getIlluminance();
 
-				Map<String, String> map = new HashMap<String, String>();
-				map.put("lamp_id", illuminanceDriver.getID());
-				map.put("value", String.valueOf(illuminance));
-				JSONObject jsonObject = new JSONObject(map);
+				if ((Double.compare(illuminance, illuminanceDouble) != 0 && counter < 3)) {
 
-				ACLMessage wiadomosc = new ACLMessage(ACLMessage.INFORM);
-				for (int i = 0; i < result.length; i++) {
-					wiadomosc.addReceiver(result[i].getName());
-				}
+					Map<String, String> map = new HashMap<String, String>();
+					map.put("lamp_id", illuminanceDriver.getID());
+					map.put("value", String.valueOf(illuminance));
+					JSONObject jsonObject = new JSONObject(map);
 
-				try {
-					wiadomosc.setContentObject(jsonObject.toString());
-					myAgent.send(wiadomosc);
-				} catch (Exception e) {
-					e.printStackTrace(System.out);
+					ACLMessage wiadomosc = new ACLMessage(ACLMessage.INFORM);
+					for (int i = 0; i < result.length; i++) {
+						wiadomosc.addReceiver(result[i].getName());
+					}
+
+					try {
+						wiadomosc.setContentObject(jsonObject.toString());
+						myAgent.send(wiadomosc);
+					} catch (Exception e) {
+						e.printStackTrace(System.out);
+					}
+					counter = 0;
 				}
-				actualValue = String.valueOf(illuminance);
+				counter = counter > 100 ? counter + 1 : 4;
 			}
 		}
 	}

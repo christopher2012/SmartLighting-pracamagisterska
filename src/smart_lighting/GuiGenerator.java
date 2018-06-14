@@ -1,5 +1,7 @@
 package smart_lighting;
 
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.time.LocalDate;
@@ -19,6 +21,7 @@ import javafx.event.Event;
 import javafx.event.EventHandler;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
+import javafx.scene.Group;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.CheckBox;
@@ -26,6 +29,8 @@ import javafx.scene.control.ChoiceBox;
 import javafx.scene.control.Label;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.control.Tooltip;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.VBox;
@@ -124,25 +129,25 @@ public class GuiGenerator {
 	}
 
 	public ActorModel addPedestrian(String id) {
-		Circle circle = new Circle(0, 0, 8, Paint.valueOf("FFFFFF"));
+		Circle circle = new Circle(0, 0, 6, Paint.valueOf("FFFFFF"));
 		canvas.getChildren().add(circle);
 
 		return new ActorModel(id, circle);
 	}
-	
+
 	public ActorModel addGroup(String id) {
 
 		Pane pane = new Pane();
-		
-		Circle circle1 = new Circle(-12, -12, 6, Paint.valueOf("FFFFFF"));
+
+		Circle circle1 = new Circle(-12, -12, 5, Paint.valueOf("FFFFFF"));
 		canvas.getChildren().add(circle1);
-		Circle circle2 = new Circle(-12.0, 12, 6, Paint.valueOf("FFFFFF"));
+		Circle circle2 = new Circle(-12.0, 12, 5, Paint.valueOf("FFFFFF"));
 		canvas.getChildren().add(circle2);
-		Circle circle3 = new Circle(0, 0, 6, Paint.valueOf("FFFFFF"));
+		Circle circle3 = new Circle(0, 0, 5, Paint.valueOf("FFFFFF"));
 		canvas.getChildren().add(circle3);
-		Circle circle4 = new Circle(12, 12, 6, Paint.valueOf("FFFFFF"));
+		Circle circle4 = new Circle(12, 12, 5, Paint.valueOf("FFFFFF"));
 		canvas.getChildren().add(circle4);
-		Circle circle5 = new Circle(12, -12, 6, Paint.valueOf("FFFFFF"));
+		Circle circle5 = new Circle(12, -12, 5, Paint.valueOf("FFFFFF"));
 		canvas.getChildren().add(circle5);
 
 		pane.getChildren().add(circle1);
@@ -150,14 +155,14 @@ public class GuiGenerator {
 		pane.getChildren().add(circle3);
 		pane.getChildren().add(circle4);
 		pane.getChildren().add(circle5);
-		
+
 		canvas.getChildren().add(pane);
 
 		return new ActorModel(id, pane);
 	}
-	
+
 	public ActorModel addVehicle(String id) {
-				
+
 		Rectangle car = new Rectangle();
 
 		car.setX(-10);
@@ -235,9 +240,15 @@ public class GuiGenerator {
 		label4.setAlignment(Pos.CENTER);
 		label4.setStyle("-fx-font: normal bold 15px 'serif' ");
 
-		CheckBox checkbox = new CheckBox("Samochód osobowy");
-		CheckBox checkbox2 = new CheckBox("Zorganizowana demostracja");
-		CheckBox checkbox3 = new CheckBox("Pieszy przy ulicy");
+		CheckBox checkbox = new CheckBox("Uczestnicy ruchu drogowego");
+		CheckBox checkbox1 = new CheckBox("Szko³a");
+		CheckBox checkbox2 = new CheckBox("Ograniczona widocznoœæ");
+		CheckBox checkbox3 = new CheckBox("Wschód i zachód");
+		CheckBox checkbox4 = new CheckBox("Grupa ludzi");
+		CheckBox checkbox5 = new CheckBox("Cykliczny przejazd");
+		CheckBox checkbox6 = new CheckBox("Skrzy¿owanie");
+		CheckBox checkbox7 = new CheckBox("Miejsca niebezpieczne");
+		CheckBox checkbox8 = new CheckBox("Park");
 
 		ChoiceBox locationchoiceBox = new ChoiceBox();
 		locationchoiceBox.getItems().addAll(CloudinessSimulation.getInstance().getCloudinnessItem());
@@ -268,6 +279,12 @@ public class GuiGenerator {
 		VBox.setMargin(checkbox, new Insets(0, 0, 10, 0));
 		VBox.setMargin(checkbox2, new Insets(0, 0, 10, 0));
 		VBox.setMargin(checkbox3, new Insets(0, 0, 10, 0));
+		VBox.setMargin(checkbox1, new Insets(0, 0, 10, 0));
+		VBox.setMargin(checkbox4, new Insets(0, 0, 10, 0));
+		VBox.setMargin(checkbox5, new Insets(0, 0, 10, 0));
+		VBox.setMargin(checkbox6, new Insets(0, 0, 10, 0));
+		VBox.setMargin(checkbox7, new Insets(0, 0, 10, 0));
+		VBox.setMargin(checkbox8, new Insets(0, 0, 10, 0));
 		VBox.setMargin(locationchoiceBox, new Insets(0, 0, 10, 0));
 		VBox.setMargin(separator, new Insets(5, 0, 15, 0));
 		VBox.setMargin(separator3, new Insets(5, 0, 15, 0));
@@ -275,8 +292,8 @@ public class GuiGenerator {
 		VBox.setMargin(separator5, new Insets(5, 0, 15, 0));
 
 		vbox.getChildren().addAll(label2, currentTimeLabel, separator5, button1, button2, separator, label1,
-				dateTimePicker, button3, separator3, label3, checkbox, checkbox2, checkbox3, separator4, label4,
-				locationchoiceBox);
+				dateTimePicker, button3, separator3, label3, checkbox, checkbox2, checkbox3, checkbox1, checkbox4,
+				checkbox5, checkbox6, checkbox7, checkbox8, separator4, label4, locationchoiceBox);
 
 		canvas = new Pane();
 
@@ -284,10 +301,80 @@ public class GuiGenerator {
 		border.setLeft(vbox);
 		canvas.getStyleClass().addAll("pane");
 
+		try {
+
+			Image image = new Image(new FileInputStream("C:\\Users\\HP\\Desktop\\budynek-szko³y_318-62517.png"));
+			ImageView imageView = new ImageView(image);
+			
+
+			imageView.setX(550);
+			imageView.setY(250);
+
+			imageView.setFitHeight(120);
+			imageView.setFitWidth(120);
+
+			Image imgzebra = new Image(new FileInputStream("C:\\Users\\HP\\Desktop\\zebra.png"));
+			ImageView imgzebraView = new ImageView(imgzebra);
+			
+
+			imgzebraView.setX(455);
+			imgzebraView.setY(70);
+
+			imgzebraView.setFitHeight(60);
+			imgzebraView.setFitWidth(40);
+			
+			Image tree = new Image(new FileInputStream("C:\\Users\\HP\\Desktop\\tree.png"));
+			ImageView tree1 = new ImageView(tree);
+			ImageView tree2 = new ImageView(tree);
+			ImageView tree3 = new ImageView(tree);
+			ImageView tree4 = new ImageView(tree);
+
+			tree1.setX(600);
+			tree1.setY(575);
+			tree2.setX(650);
+			tree2.setY(625);
+			tree3.setX(485);
+			tree3.setY(575);
+			tree4.setX(740);
+			tree4.setY(625);
+
+			tree1.setFitHeight(50);
+			tree1.setFitWidth(50);
+			tree2.setFitHeight(50);
+			tree2.setFitWidth(50);
+			tree3.setFitHeight(50);
+			tree3.setFitWidth(50);
+			tree4.setFitHeight(50);
+			tree4.setFitWidth(50);
+
+			imageView.setPreserveRatio(true);
+			Group root = new Group(imageView);
+			imageView.setPreserveRatio(true);
+			Group rootzebra = new Group(imgzebraView);
+			imageView.setPreserveRatio(true);
+			Group root1 = new Group(tree1);
+			tree1.setPreserveRatio(true);
+			Group root2 = new Group(tree2);
+			tree2.setPreserveRatio(true);
+			Group root3 = new Group(tree3);
+			tree3.setPreserveRatio(true);
+			Group root4 = new Group(tree4);
+			tree4.setPreserveRatio(true);
+			canvas.getChildren().add(root);
+			canvas.getChildren().add(rootzebra);
+			canvas.getChildren().add(root1);
+			canvas.getChildren().add(root2);
+			canvas.getChildren().add(root3);
+			canvas.getChildren().add(root4);
+		} catch (FileNotFoundException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+
 		scrollPane.setContent(canvas);
 		border.setCenter(scrollPane);
 		border.setMargin(scrollPane, new Insets(10, 10, 10, 0));
-		Scene scene = new Scene(border, 1200, 800);
+		Scene scene = new Scene(border, 1050, 850);
 		scene.getStylesheets().add("css/layoutstyles.css");
 		primaryStage.setScene(scene);
 		primaryStage.show();

@@ -73,7 +73,7 @@ public class ExecutionAgent extends Agent {
 						JSONObject jsonObject = new JSONObject(msg.getContentObject().toString());
 						String id = jsonObject.getString(JSONKey.LAMP_ID);
 						if (acceptedIDList.contains(id)) {
-							System.out.println("exe: " + msg.getContentObject().toString());
+							//System.out.println("exe: " + msg.getContentObject().toString());
 
 							ACLMessage command = new ACLMessage(ACLMessage.INFORM);
 							command.setContentObject(Float.valueOf(jsonObject.getString(JSONKey.POWER)));

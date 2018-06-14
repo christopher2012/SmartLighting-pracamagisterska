@@ -10,13 +10,13 @@ import org.apache.commons.httpclient.methods.GetMethod;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-public class SimConnector extends Thread {
+public class ApiConnector extends Thread {
 
 	HttpClient httpClient;
 	GetMethod getMethod;
 	OnResponseListener callback;
 
-	public SimConnector(HttpClient httpClient, GetMethod getMethod, OnResponseListener callback) {
+	public ApiConnector(HttpClient httpClient, GetMethod getMethod, OnResponseListener callback) {
 		this.httpClient = httpClient;
 		this.getMethod = getMethod;
 		this.callback = callback;

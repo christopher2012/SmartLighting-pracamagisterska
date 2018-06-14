@@ -9,7 +9,7 @@ import org.json.JSONObject;
 import drivers.Movement.OnResult;
 import drivers.remote.VelocityRemote;
 import utils.JSONKey;
-import utils.SimConnector;
+import utils.ApiConnector;
 
 public class Velocity extends Driver implements VelocityRemote {
 
@@ -25,7 +25,7 @@ public class Velocity extends Driver implements VelocityRemote {
 		MultiThreadedHttpConnectionManager connectionManager = new MultiThreadedHttpConnectionManager();
 		HttpClient httpClient = new HttpClient(connectionManager);
 
-		new SimConnector(httpClient, new GetMethod(DATA_URL + getID()), new SimConnector.OnResponseListener() {
+		new ApiConnector(httpClient, new GetMethod(DATA_URL + getID()), new ApiConnector.OnResponseListener() {
 
 			@Override
 			public void onResponse(JSONObject jsonObject) {

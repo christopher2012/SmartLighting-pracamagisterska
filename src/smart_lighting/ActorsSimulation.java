@@ -13,20 +13,21 @@ import java.util.TimerTask;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import javafx.application.Platform;
 import smart_lighting.Simulation.ActorModel;
 
 public class ActorsSimulation {
 
 	ArrayList<ActorModel> actors;
-	
+
 	public ActorsSimulation(ArrayList<ActorModel> actors) {
 		this.actors = actors;
 	}
-	
-	public void start(){
-		
+
+	public void start() {
+
 		TimerTask timerTask = new TimerTask() {
-			
+
 			@Override
 			public void run() {
 				for (ActorModel actor : actors) {
@@ -55,8 +56,14 @@ public class ActorsSimulation {
 								double x = myResponse.getJSONObject("currentCoords").getDouble("x");
 								double y = myResponse.getJSONObject("currentCoords").getDouble("y");
 
-								actor.node.setTranslateX(x);
-								actor.node.setTranslateY(y);
+								Platform.runLater(new Runnable() {
+
+									@Override
+									public void run() {
+										actor.node.setTranslateX(x);
+										actor.node.setTranslateY(y);
+									}
+								});
 							} catch (JSONException e) {
 								e.printStackTrace();
 							} catch (MalformedURLException e) {
@@ -70,10 +77,10 @@ public class ActorsSimulation {
 				}
 			}
 		};
-		
+
 		Timer timer = new Timer("timer");
 		timer.schedule(timerTask, 1000, 1000);
-		
+
 	}
-	
+
 }

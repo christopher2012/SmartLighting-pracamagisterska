@@ -51,13 +51,16 @@ public class ClockSimulation {
 		}
 	}
 
-	public void stopTimer(){
-		timer.cancel();
+	public void stopTimer() {
+		if (timer != null)
+			timer.cancel();
 	}
-	
-	public void startTimer(){
+
+	public void startTimer() {
+		if (timer != null)
+			timer.cancel();
 		timer = new Timer("current-time");
 		timer.schedule(clockSimulation.new UpdateTimeTask(), 1000, 1000);
 	}
-	
+
 }

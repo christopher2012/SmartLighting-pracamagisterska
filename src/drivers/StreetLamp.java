@@ -1,6 +1,7 @@
 package drivers;
 
 import drivers.remote.StreetLampRemote;
+import javafx.application.Platform;
 import smart_lighting.Simulation;
 
 public class StreetLamp implements StreetLampRemote {
@@ -13,8 +14,14 @@ public class StreetLamp implements StreetLampRemote {
 
 	@Override
 	public void setPower(float power) {
-		streetLampModel.circle.setRadius(50*power);
-		streetLampModel.circle.setOpacity(power*0.9);
+		Platform.runLater(new Runnable() {
+
+			@Override
+			public void run() {
+				streetLampModel.circle.setRadius(50 * power);
+				streetLampModel.circle.setOpacity(0.7);
+			}
+		});
 	}
 
 }
