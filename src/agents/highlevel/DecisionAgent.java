@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Vector;
+import java.util.concurrent.ConcurrentHashMap;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -24,7 +25,8 @@ import jade.domain.FIPAAgentManagement.ServiceDescription;
 import jade.lang.acl.ACLMessage;
 import jade.lang.acl.UnreadableException;
 import model.Decision;
-import model.MicroEvironment;
+import model.MicroEnvironment;
+import model.PatternModel;
 import smart_lighting.GuiGenerator;
 import smart_lighting.Manager;
 import utils.JSONKey;
@@ -32,23 +34,20 @@ import utils.JSONKey;
 public class DecisionAgent extends Agent {
 
 	public final static String PREFIX_AGENT = "DECISION_ENGINE_";
-	public Vector<Decision> decisionQueue;
-	public Map<String, MicroEvironment> microEnvironments;
+	public static ConcurrentHashMap<String, MicroEnvironment> microEnvironments = new ConcurrentHashMap<>();
 
 	private ArrayList<String> acceptedIDList = new ArrayList<>();
+	public static ArrayList<PatternModel> patternArray = new ArrayList<>();
 
 	@Override
 	protected void setup() {
 		register();
 
 		acceptedIDList = (ArrayList<String>) getArguments()[0];
-		microEnvironments = new HashMap<>();
 		for (String key : acceptedIDList) {
-			microEnvironments.put(key, new MicroEvironment(key));
+			microEnvironments.put(key, new MicroEnvironment(key));
 		}
 		addBehaviour(new DecisionProcessor(this));
-		addBehaviour(new DecisionSender(this, 5000));
-		decisionQueue = new Vector<>();
 	}
 
 	public static DFAgentDescription[] getDFAgents(Agent agent) throws FIPAException {
@@ -86,7 +85,6 @@ public class DecisionAgent extends Agent {
 				try {
 					if (msg != null) {
 						JSONObject jsonObject = new JSONObject(msg.getContentObject().toString());
-						System.out.println(jsonObject.toString());
 						if (acceptedIDList.contains(jsonObject.getString(JSONKey.LAMP_ID))) {
 							if (msg.getSender().getLocalName().contains(EnvironmentAnalyzerAgent.PREFIX_AGENT))
 								processEnviromentData(new JSONObject(msg.getContentObject().toString()));
@@ -97,9 +95,9 @@ public class DecisionAgent extends Agent {
 						} else if (jsonObject.getString(JSONKey.LAMP_ID).equals(AstronomicalClockAgent.ID)) {
 							if (jsonObject.has(JSONKey.TIME_OF_DAY))
 								if (jsonObject.getString(JSONKey.TIME_OF_DAY).equals(JSONKey.NIGHT))
-									MicroEvironment.setNight(true);
+									MicroEnvironment.setNight(true);
 								else
-									MicroEvironment.setNight(false);
+									MicroEnvironment.setNight(false);
 						}
 
 					}
@@ -111,24 +109,23 @@ public class DecisionAgent extends Agent {
 
 		private void processEnviromentData(JSONObject msg) throws JSONException {
 
-			String id = msg.getString(JSONKey.LAMP_ID);
-			MicroEvironment microEvironment = microEnvironments.get(id);
+			String lampID = msg.getString(JSONKey.LAMP_ID);
+			MicroEnvironment microEvironment = microEnvironments.get(lampID);
 
 			if (msg.has(JSONKey.VALUE)) {
 				microEvironment.setIlluminance(Float.valueOf(msg.getString(JSONKey.VALUE)));
+				microEvironment.calculatePower();
+				sendDecision(new Decision(lampID, microEvironment.getPower()));
 
-				if (microEvironment.calculatePower(microEnvironments))
-					sendDecision(new Decision(id, microEvironment.getPower()));
-
-				GuiGenerator.instance().getStreetLightInfo(id).updateInfo(microEnvironments.get(id));
+				GuiGenerator.instance().getStreetLightInfo(lampID).updateInfo(microEnvironments.get(lampID));
 
 			}
 		}
 
 		private void processImageData(JSONObject msg) throws JSONException {
 
-			String id = msg.getString(JSONKey.LAMP_ID);
-			MicroEvironment microEvironment = microEnvironments.get(id);
+			String lampID = msg.getString(JSONKey.LAMP_ID);
+			MicroEnvironment microEvironment = microEnvironments.get(lampID);
 
 			if (msg.has("readings")) {
 				microEvironment.clearActors();
@@ -145,21 +142,23 @@ public class DecisionAgent extends Agent {
 						}
 					}
 				}
+				//microEvironment.calculatePower(microEnvironments);
+
+				//sendDecision(new Decision(lampID, microEvironment.getPower()));
+				//GuiGenerator.instance().getStreetLightInfo(lampID).updateInfo(microEnvironments.get(lampID));
 			}
 		}
 
 		private void processMovementData(JSONObject msg) throws JSONException {
 
 			String lampID = msg.getString("lamp_id");
-			System.out.println(msg.toString());
-			MicroEvironment microEvironment = microEnvironments.get(lampID);
+
+			MicroEnvironment microEvironment = DecisionAgent.microEnvironments.get(lampID);
 			if (msg.has("sensingMovement")) {
 				microEvironment.setMove(msg.getBoolean("sensingMovement"));
-				microEvironment.calculatePower(microEnvironments);
-
-				if (microEvironment.calculatePower(microEnvironments))
-					sendDecision(new Decision(lampID, microEvironment.getPower()));
-				GuiGenerator.instance().getStreetLightInfo(lampID).updateInfo(microEnvironments.get(lampID));
+				//microEvironment.calculatePower(microEnvironments);
+				//sendDecision(new Decision(lampID, microEvironment.getPower()));
+				//GuiGenerator.instance().getStreetLightInfo(lampID).updateInfo(microEnvironments.get(lampID));
 			}
 
 		}
@@ -191,43 +190,4 @@ public class DecisionAgent extends Agent {
 		}
 	}
 
-	class DecisionSender extends TickerBehaviour {
-
-		public DecisionSender(Agent agent, long period) {
-			super(agent, period);
-		}
-
-		@Override
-		protected void onTick() {
-
-			if (decisionQueue.size() > 0) {
-				DFAgentDescription[] result = null;
-				try {
-					result = ExecutionAgent.getDFAgents(DecisionAgent.this);
-				} catch (FIPAException e) {
-					e.printStackTrace();
-				}
-
-				if (result != null & result.length > 0) {
-					ACLMessage message = new ACLMessage(ACLMessage.INFORM);
-					for (int i = 0; i < result.length; i++) {
-						message.addReceiver(result[i].getName());
-					}
-					for (Decision decision : decisionQueue) {
-						Map map = new HashMap();
-						map.put(JSONKey.LAMP_ID, decision.lampID);
-						map.put(JSONKey.POWER, decision.power);
-						try {
-							message.setContentObject(new JSONObject(map).toString());
-							myAgent.send(message);
-						} catch (IOException e) {
-							e.printStackTrace();
-						}
-					}
-					decisionQueue.clear();
-				}
-			}
-
-		}
-	}
 }

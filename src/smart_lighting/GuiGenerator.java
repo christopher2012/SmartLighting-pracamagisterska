@@ -2,9 +2,9 @@ package smart_lighting;
 
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
-import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Date;
@@ -17,12 +17,13 @@ import javafx.application.Platform;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.event.ActionEvent;
-import javafx.event.Event;
 import javafx.event.EventHandler;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Group;
 import javafx.scene.Scene;
+import javafx.scene.control.Alert;
+import javafx.scene.control.Alert.AlertType;
 import javafx.scene.control.Button;
 import javafx.scene.control.CheckBox;
 import javafx.scene.control.ChoiceBox;
@@ -51,6 +52,19 @@ public class GuiGenerator {
 	private Pane canvas;
 	private Label currentTimeLabel;
 	private Map<String, StreetLightInfo> tooltips = new HashMap<>();
+	public boolean simulationIsWorking = false;
+
+	public boolean normal = false;
+	public boolean visibility = false;
+	public boolean eastwest = false;
+	public boolean school = false;
+	public boolean groupPeople = false;
+	public boolean cyclic = false;
+	public boolean crossStreet = false;
+	public boolean isDangerous = false;
+	public boolean isPark = false;
+
+	public ActorsSimulation actorsSimulation;
 
 	public static GuiGenerator instance() {
 		if (guiGenerator == null)
@@ -107,13 +121,6 @@ public class GuiGenerator {
 			Circle circleTop = new Circle(x, y, 15, Paint.valueOf("9FA1A5"));
 			circle.setOpacity(0.5);
 			circleTop.setOpacity(0.7);
-			/*
-			 * RadialGradient gradient1 = new RadialGradient(0, .1, 100, 100,
-			 * 20, false, CycleMethod.NO_CYCLE, new Stop(0, Color.RED), new
-			 * Stop(1, Color.BLACK));
-			 * 
-			 * circle.setFill(gradient1);
-			 */
 			Tooltip tooltip = new Tooltip();
 			Tooltip.install(circleTop, tooltip);
 			tooltips.put(id, new StreetLightInfo(id, tooltip));
@@ -190,7 +197,7 @@ public class GuiGenerator {
 		dateTimePicker.setMinWidth(180);
 		dateTimePicker.setFormat(AstronomicalClockAgent.TIME_FORMAT);
 		DateTimeFormatter formatter = DateTimeFormatter.ofPattern(AstronomicalClockAgent.TIME_FORMAT);
-		dateTimePicker.setValue(LocalDate.parse(currentTimeLabel.getText(), formatter));
+		dateTimePicker.setDateTimeValue(LocalDateTime.parse(currentTimeLabel.getText(), formatter));
 		Button button1 = new Button("Uruchom symulacje");
 		button1.setMinWidth(180);
 		button1.setOnAction(new EventHandler<ActionEvent>() {
@@ -198,6 +205,9 @@ public class GuiGenerator {
 			@Override
 			public void handle(ActionEvent event) {
 				ClockSimulation.getInstance().startTimer();
+				actorsSimulation.start();
+				simulationIsWorking = true;
+				ResultsGenerator.instance().generate();
 			}
 		});
 		Button button2 = new Button("Zatrzymaj symulacje");
@@ -207,6 +217,9 @@ public class GuiGenerator {
 			@Override
 			public void handle(ActionEvent event) {
 				ClockSimulation.getInstance().stopTimer();
+				actorsSimulation.stop();
+				simulationIsWorking = false;
+				ResultsGenerator.instance().stop();
 			}
 		});
 		Button button3 = new Button("Zastosuj");
@@ -240,16 +253,6 @@ public class GuiGenerator {
 		label4.setAlignment(Pos.CENTER);
 		label4.setStyle("-fx-font: normal bold 15px 'serif' ");
 
-		CheckBox checkbox = new CheckBox("Uczestnicy ruchu drogowego");
-		CheckBox checkbox1 = new CheckBox("Szko³a");
-		CheckBox checkbox2 = new CheckBox("Ograniczona widocznoœæ");
-		CheckBox checkbox3 = new CheckBox("Wschód i zachód");
-		CheckBox checkbox4 = new CheckBox("Grupa ludzi");
-		CheckBox checkbox5 = new CheckBox("Cykliczny przejazd");
-		CheckBox checkbox6 = new CheckBox("Skrzy¿owanie");
-		CheckBox checkbox7 = new CheckBox("Miejsca niebezpieczne");
-		CheckBox checkbox8 = new CheckBox("Park");
-
 		ChoiceBox locationchoiceBox = new ChoiceBox();
 		locationchoiceBox.getItems().addAll(CloudinessSimulation.getInstance().getCloudinnessItem());
 		locationchoiceBox.setMinWidth(180);
@@ -259,6 +262,105 @@ public class GuiGenerator {
 			@Override
 			public void changed(ObservableValue<? extends Number> observable, Number oldValue, Number newValue) {
 				CloudinessSimulation.getInstance().setCurrentItem(newValue.intValue());
+			}
+		});
+		Alert alert = new Alert(AlertType.CONFIRMATION, "Uruchom ponownie symulator aktorów.");
+		alert.setTitle("Komunikat");
+		alert.setHeaderText(null);
+
+		CheckBox checkbox = new CheckBox("Uczestnicy ruchu drogowego\n w nocy");
+		checkbox.selectedProperty().addListener(new ChangeListener<Boolean>() {
+			public void changed(ObservableValue<? extends Boolean> ov, Boolean old_val, Boolean new_val) {
+				normal = new_val;
+				if (normal) {
+					DateTimeFormatter formatter = DateTimeFormatter.ofPattern(AstronomicalClockAgent.TIME_FORMAT);
+					dateTimePicker.setDateTimeValue(LocalDateTime.parse("30.06.2018 23:00:00", formatter));
+					Simulation.db.setDefaultCoordinates();
+					button3.fire();
+					alert.show();
+				}
+			}
+		});
+		CheckBox checkbox1 = new CheckBox("Szko³a");
+		checkbox1.selectedProperty().addListener(new ChangeListener<Boolean>() {
+			public void changed(ObservableValue<? extends Boolean> ov, Boolean old_val, Boolean new_val) {
+				school = new_val;
+				if (school) {
+					Simulation.db.setSchoolCoordinates();
+					alert.show();
+				}
+			}
+		});
+		CheckBox checkbox2 = new CheckBox("Ograniczona widocznoœæ");
+		checkbox2.selectedProperty().addListener(new ChangeListener<Boolean>() {
+			public void changed(ObservableValue<? extends Boolean> ov, Boolean old_val, Boolean new_val) {
+				visibility = new_val;
+				if (visibility) {
+					locationchoiceBox.getSelectionModel().select(3);
+				}
+			}
+		});
+		CheckBox checkbox3 = new CheckBox("Wschód i zachód");
+		
+
+		dateTimePicker.valueProperty().addListener(new ChangeListener<LocalDate>() {
+			@Override
+			public void changed(ObservableValue<? extends LocalDate> observable, LocalDate oldValue,
+					LocalDate newValue) {
+				if (!oldValue.equals(newValue))
+					dateTimePicker.setValue(newValue.plusDays(0));
+			}
+		});
+		checkbox3.selectedProperty().addListener(new ChangeListener<Boolean>() {
+			public void changed(ObservableValue<? extends Boolean> ov, Boolean old_val, Boolean new_val) {
+				eastwest = new_val;
+				if (eastwest) {
+					dateTimePicker.setDateTimeValue(LocalDateTime.parse("29.06.2018 20:50:00", formatter));
+					dateTimePicker.getEditor().commitValue();
+					button3.fire();
+				}
+			}
+		});
+		CheckBox checkbox4 = new CheckBox("Grupa ludzi");
+		checkbox4.selectedProperty().addListener(new ChangeListener<Boolean>() {
+			public void changed(ObservableValue<? extends Boolean> ov, Boolean old_val, Boolean new_val) {
+				groupPeople = new_val;
+				if (groupPeople) {
+					actorsSimulation.actors.add(GuiGenerator.instance().addGroup("2"));
+					Simulation.db.activeGroup();
+				} else {
+					Simulation.db.deactiveGroup();
+					actorsSimulation.deleteActor("2");
+				}
+				alert.show();
+			}
+		});
+		CheckBox checkbox5 = new CheckBox("Cykliczny przejazd");
+		checkbox5.selectedProperty().addListener(new ChangeListener<Boolean>() {
+			public void changed(ObservableValue<? extends Boolean> ov, Boolean old_val, Boolean new_val) {
+				cyclic = new_val;
+			}
+		});
+		CheckBox checkbox6 = new CheckBox("Skrzy¿owanie");
+		checkbox6.selectedProperty().addListener(new ChangeListener<Boolean>() {
+			public void changed(ObservableValue<? extends Boolean> ov, Boolean old_val, Boolean new_val) {
+				crossStreet = new_val;
+			}
+		});
+		CheckBox checkbox7 = new CheckBox("Miejsca niebezpieczne");
+		checkbox7.selectedProperty().addListener(new ChangeListener<Boolean>() {
+			public void changed(ObservableValue<? extends Boolean> ov, Boolean old_val, Boolean new_val) {
+				isDangerous = new_val;
+				if (isDangerous) {
+					Simulation.db.setDangerousCoordinates();
+					alert.show();
+				}
+			}
+		});
+		CheckBox checkbox8 = new CheckBox("Park");
+		checkbox8.selectedProperty().addListener(new ChangeListener<Boolean>() {
+			public void changed(ObservableValue<? extends Boolean> ov, Boolean old_val, Boolean new_val) {
+				isPark = new_val;
 			}
 		});
 
@@ -303,9 +405,8 @@ public class GuiGenerator {
 
 		try {
 
-			Image image = new Image(new FileInputStream("C:\\Users\\HP\\Desktop\\budynek-szko³y_318-62517.png"));
+			Image image = new Image(new FileInputStream("\\images\\szkola.png"));
 			ImageView imageView = new ImageView(image);
-			
 
 			imageView.setX(550);
 			imageView.setY(250);
@@ -315,14 +416,13 @@ public class GuiGenerator {
 
 			Image imgzebra = new Image(new FileInputStream("C:\\Users\\HP\\Desktop\\zebra.png"));
 			ImageView imgzebraView = new ImageView(imgzebra);
-			
 
 			imgzebraView.setX(455);
 			imgzebraView.setY(70);
 
 			imgzebraView.setFitHeight(60);
 			imgzebraView.setFitWidth(40);
-			
+
 			Image tree = new Image(new FileInputStream("C:\\Users\\HP\\Desktop\\tree.png"));
 			ImageView tree1 = new ImageView(tree);
 			ImageView tree2 = new ImageView(tree);
@@ -367,7 +467,6 @@ public class GuiGenerator {
 			canvas.getChildren().add(root3);
 			canvas.getChildren().add(root4);
 		} catch (FileNotFoundException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 

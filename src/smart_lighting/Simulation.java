@@ -10,6 +10,8 @@ import javafx.stage.Stage;
 
 public class Simulation extends Application {
 
+	public static DatabaseManager db = null;
+
 	public static void main(String[] args) {
 		launch(args);
 	}
@@ -26,10 +28,11 @@ public class Simulation extends Application {
 
 	private void loadData() {
 		DatabaseManager databaseManager = new DatabaseManager("bolt://localhost:7687", "neo4j", "test");
+		Simulation.db = databaseManager;
 		GuiGenerator.instance().addRoads(databaseManager);
 		ArrayList<ActorModel> actors = new ArrayList<>();
 		actors.add(GuiGenerator.instance().addVehicle("KR01234"));
-		actors.add(GuiGenerator.instance().addPedestrian("1"));
+		// actors.add(GuiGenerator.instance().addPedestrian("1"));
 		// actors.add(GuiGenerator.instance().addGroup("1"));
 		Manager.onCreateActorsListener.onCreateActors(actors);
 		Manager.onDataLoadListener.onDataLoad(GuiGenerator.instance().addStreetLamps(databaseManager));

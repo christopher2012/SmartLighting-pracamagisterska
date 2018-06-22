@@ -13,7 +13,7 @@ import org.neo4j.driver.v1.Transaction;
 import org.neo4j.driver.v1.TransactionWork;
 import org.neo4j.driver.v1.types.Node;
 
-import model.MicroEvironment;
+import model.MicroEnvironment;
 
 public class DatabaseManager implements AutoCloseable {
 	private final Driver driver;
@@ -25,6 +25,85 @@ public class DatabaseManager implements AutoCloseable {
 	@Override
 	public void close() throws Exception {
 		driver.close();
+	}
+	
+	public void activeGroup(){
+		try (Session session = driver.session()) {
+			String greeting = session.writeTransaction(new TransactionWork<String>() {
+				@Override
+				public String execute(Transaction tx) {
+					StatementResult result = tx
+							.run("match (n:group) set n.disabled=false;");
+					return "";
+				}
+			});
+		}
+	}
+	
+	public void deactiveGroup(){
+		try (Session session = driver.session()) {
+			String greeting = session.writeTransaction(new TransactionWork<String>() {
+				@Override
+				public String execute(Transaction tx) {
+					StatementResult result = tx
+							.run("match (n:group) set n.disabled=true;");
+					return "";
+				}
+			});
+		}
+	}
+
+	public void setDangerousCoordinates() {
+		try (Session session = driver.session()) {
+			String greeting = session.writeTransaction(new TransactionWork<String>() {
+				@Override
+				public String execute(Transaction tx) {
+					StatementResult result = tx
+							.run("match (n{disabled:false}) set n.startNodeId=\"3\", n.targetNodeId=\"4\" return n");
+					return "";
+				}
+			});
+		}
+	}
+
+	public void setParkCoordinates() {
+		try (Session session = driver.session()) {
+			String greeting = session.writeTransaction(new TransactionWork<String>() {
+				@Override
+				public String execute(Transaction tx) {
+					StatementResult result = tx
+							.run("match (n{disabled:false}) set n.startNodeId=\"14\", n.targetNodeId=\"15\" return n");
+					return "";
+				}
+			});
+		}
+	}
+	
+
+	public void setDefaultCoordinates() {
+		try (Session session = driver.session()) {
+			String greeting = session.writeTransaction(new TransactionWork<String>() {
+				@Override
+				public String execute(Transaction tx) {
+					StatementResult result = tx
+							.run("match (n{disabled:false}) set n.startNodeId=\"1\", n.targetNodeId=\"2\" return n");
+					return "";
+				}
+			});
+		}
+	}
+
+	public void setSchoolCoordinates() {
+		try (Session session = driver.session()) {
+			String greeting = session.writeTransaction(new TransactionWork<String>() {
+				@Override
+				public String execute(Transaction tx) {
+					StatementResult result = tx
+							.run("match (n{disabled:false}) set n.startNodeId=\"8\", n.targetNodeId=\"13\" return n");
+					return "";
+				}
+			});
+		}
 	}
 
 	public ArrayList<Node> getDataDevices() {
@@ -62,7 +141,7 @@ public class DatabaseManager implements AutoCloseable {
 						Record record = result.next();
 						Node node1 = record.get("n").asNode();
 						Node node2 = record.get("m").asNode();
-						MicroEvironment.routeGraph.putEdge(node1.get("node_id").asString(),
+						MicroEnvironment.routeGraph.putEdge(node1.get("node_id").asString(),
 								node2.get("node_id").asString());
 						if (!Road.roadExists(roads, node1, node2))
 							roads.add(new Road(node1, node2));

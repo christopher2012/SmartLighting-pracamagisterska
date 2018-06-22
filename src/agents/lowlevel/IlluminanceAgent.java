@@ -46,10 +46,9 @@ public class IlluminanceAgent extends Agent {
 			} catch (FIPAException e) {
 				e.printStackTrace();
 			}
-			if (result != null & result.length > 0) {
+			if (result != null && result.length > 0) {
 				double illuminance = illuminanceDriver.getIlluminance();
 
-				if ((Double.compare(illuminance, illuminanceDouble) != 0 && counter < 3)) {
 
 					Map<String, String> map = new HashMap<String, String>();
 					map.put("lamp_id", illuminanceDriver.getID());
@@ -67,9 +66,7 @@ public class IlluminanceAgent extends Agent {
 					} catch (Exception e) {
 						e.printStackTrace(System.out);
 					}
-					counter = 0;
-				}
-				counter = counter > 100 ? counter + 1 : 4;
+
 			}
 		}
 	}

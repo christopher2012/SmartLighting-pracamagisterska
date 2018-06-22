@@ -5,7 +5,7 @@ import javafx.scene.Scene;
 import javafx.scene.control.Tooltip;
 import javafx.scene.shape.Circle;
 import javafx.stage.Window;
-import model.MicroEvironment;
+import model.MicroEnvironment;
 
 public class StreetLightInfo {
 
@@ -32,7 +32,7 @@ public class StreetLightInfo {
 		});
 	}
 
-	public void updateInfo(MicroEvironment microEvironment) {
+	public void updateInfo(MicroEnvironment microEvironment) {
 		illuminance = microEvironment.getIlluminance();
 		power = microEvironment.getPower();
 		updateTooltip();

@@ -55,7 +55,7 @@ public class VelocityAgent extends Agent {
 
 							try {
 								wiadomosc.setContentObject(data);
-								System.out.println(data);
+								//System.out.println(data);
 								myAgent.send(wiadomosc);
 							} catch (Exception e) {
 								e.printStackTrace(System.out);

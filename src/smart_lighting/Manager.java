@@ -46,9 +46,7 @@ public class Manager extends Agent implements OnDataLoadListener, OnCreateActors
 
 	@Override
 	protected void setup() {
-		onDataLoadListener = Manager.this;
-		onCreateActorsListener = Manager.this;
-/*
+
 		try {
 			Class.forName("com.mysql.jdbc.Driver").newInstance();
 		} catch (InstantiationException e) {
@@ -61,7 +59,16 @@ public class Manager extends Agent implements OnDataLoadListener, OnCreateActors
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		*/
+		onDataLoadListener = Manager.this;
+		onCreateActorsListener = Manager.this;
+		/*
+		 * try { Class.forName("com.mysql.jdbc.Driver").newInstance(); } catch
+		 * (InstantiationException e) { // TODO Auto-generated catch block
+		 * e.printStackTrace(); } catch (IllegalAccessException e) { // TODO
+		 * Auto-generated catch block e.printStackTrace(); } catch
+		 * (ClassNotFoundException e) { // TODO Auto-generated catch block
+		 * e.printStackTrace(); }
+		 */
 		Thread t = new Thread() {
 			@Override
 			public void run() {
@@ -70,6 +77,8 @@ public class Manager extends Agent implements OnDataLoadListener, OnCreateActors
 			}
 		};
 		t.start();
+		SQLManager sqlManager = new SQLManager();
+		DecisionAgent.patternArray = sqlManager.getLightPatterns();
 	}
 
 	@Override
@@ -173,8 +182,6 @@ public class Manager extends Agent implements OnDataLoadListener, OnCreateActors
 
 	@Override
 	public void onCreateActors(ArrayList<ActorModel> actors) {
-
-		ActorsSimulation actorsSimulation = new ActorsSimulation(actors); //
-		actorsSimulation.start();
+		GuiGenerator.instance().actorsSimulation = new ActorsSimulation(actors);
 	}
 }

@@ -50,7 +50,10 @@ public class CameraAgent extends Agent {
 				@Override
 				public void onResult(String data) {
 
-					if (!dataString.equals(data) && counter < 3) {
+					if (!dataString.equals(data))
+						counter = 0;
+					
+					if (counter < 3 || true) {
 						DFAgentDescription[] result = null;
 						try {
 							result = ImageAnalyzerAgent.getDFAgents(CameraAgent.this);
@@ -70,7 +73,7 @@ public class CameraAgent extends Agent {
 								e.printStackTrace(System.out);
 							}
 						}
-						counter = 0;
+						dataString = data;
 					}
 					counter = counter > 100 ? counter + 1 : 4;
 				}

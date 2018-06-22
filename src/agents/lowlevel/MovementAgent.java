@@ -41,7 +41,9 @@ public class MovementAgent extends Agent {
 
 				@Override
 				public void onResult(String data) {
-					if (!dataString.equals(data) && counter < 3){
+					if (!dataString.equals(data))
+						counter = 0;
+					if (!dataString.equals(data) || counter < 3 || true){
 						DFAgentDescription[] result = null;
 						try {
 							result = MovementAnalyzerAgent.getDFAgents(MovementAgent.this);
@@ -56,13 +58,13 @@ public class MovementAgent extends Agent {
 
 							try {
 								wiadomosc.setContentObject(data);
-								System.out.println(data);
+								//System.out.println(data);
 								myAgent.send(wiadomosc);
 							} catch (Exception e) {
 								e.printStackTrace(System.out);
 							}
 						}
-						counter = 0;
+						dataString = data;
 					}
 					counter = counter > 100 ? counter + 1 : 4;
 				}

@@ -54,7 +54,7 @@ public class MovementAnalyzerAgent extends Agent {
 				try {
 					if (msg != null) {
 						JSONObject jsonObject = new JSONObject(msg.getContentObject().toString());
-						System.out.println("!!!!!" + jsonObject.toString());
+						//System.out.println("!!!!!" + jsonObject.toString());
 						if (acceptedIDList.contains(jsonObject.getString(JSONKey.LAMP_ID))) {
 							if (msg.getSender().getLocalName().contains(VelocityAgent.PREFIX_AGENT))
 								analyzeVelocity(msg.getContentObject().toString());
