@@ -72,7 +72,6 @@ public class EnvironmentAnalyzerAgent extends Agent {
 
 		private void analyzeIlluminance(String msg) {
 			try {
-				//System.out.println("message Ill: " + msg.toString());
 				sendData(new JSONObject(msg));
 			} catch (JSONException e) {
 				e.printStackTrace();

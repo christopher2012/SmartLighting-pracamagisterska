@@ -142,10 +142,6 @@ public class DecisionAgent extends Agent {
 						}
 					}
 				}
-				//microEvironment.calculatePower(microEnvironments);
-
-				//sendDecision(new Decision(lampID, microEvironment.getPower()));
-				//GuiGenerator.instance().getStreetLightInfo(lampID).updateInfo(microEnvironments.get(lampID));
 			}
 		}
 
@@ -156,9 +152,6 @@ public class DecisionAgent extends Agent {
 			MicroEnvironment microEvironment = DecisionAgent.microEnvironments.get(lampID);
 			if (msg.has("sensingMovement")) {
 				microEvironment.setMove(msg.getBoolean("sensingMovement"));
-				//microEvironment.calculatePower(microEnvironments);
-				//sendDecision(new Decision(lampID, microEvironment.getPower()));
-				//GuiGenerator.instance().getStreetLightInfo(lampID).updateInfo(microEnvironments.get(lampID));
 			}
 
 		}

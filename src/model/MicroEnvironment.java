@@ -170,8 +170,8 @@ public class MicroEnvironment {
 
 				if (GuiGenerator.instance().school) {
 					float patternPower = getPatternPower(id, PATTERN_SCHOOL);
-					if (tempPower < patternPower + 0.15f && patternPower > 0)
-						tempPower = patternPower - (patternPower * illuminance) + 0.15f;
+					if (tempPower < patternPower && patternPower > 0)
+						tempPower = patternPower - (patternPower * illuminance);
 				}
 			}
 

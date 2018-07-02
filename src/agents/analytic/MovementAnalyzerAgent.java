@@ -50,11 +50,12 @@ public class MovementAnalyzerAgent extends Agent {
 		public void action() {
 			ACLMessage msg = receive();
 			if (msg != null)
-				
+
 				try {
 					if (msg != null) {
+						System.out.println(msg.toString());
+						System.out.println("language " + msg.getLanguage());
 						JSONObject jsonObject = new JSONObject(msg.getContentObject().toString());
-						//System.out.println("!!!!!" + jsonObject.toString());
 						if (acceptedIDList.contains(jsonObject.getString(JSONKey.LAMP_ID))) {
 							if (msg.getSender().getLocalName().contains(VelocityAgent.PREFIX_AGENT))
 								analyzeVelocity(msg.getContentObject().toString());
@@ -69,7 +70,7 @@ public class MovementAnalyzerAgent extends Agent {
 				} catch (JSONException e) {
 					e.printStackTrace();
 				}
-				
+
 			block();
 		}
 
@@ -81,7 +82,7 @@ public class MovementAnalyzerAgent extends Agent {
 				e.printStackTrace();
 			}
 		}
-		
+
 		@SuppressWarnings("deprecation")
 		private void analyzeMovement(String msg) throws ParseException {
 			try {
